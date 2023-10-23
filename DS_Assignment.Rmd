@@ -1,0 +1,299 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+#library(plyr)
+```
+
+Either 1 way to read in data set 
+```{r} 
+#url="https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data"
+#df2 =read.table("adult.data", sep=',', header=FALSE)
+```
+
+
+```{r}
+adult=	read.csv("adult.csv", header=TRUE)
+```
+
+```{r}
+str(adult)
+```
+
+```{r}
+summary(adult)
+```
+
+```{r}
+#is.na(df)
+anyNA(adult)
+```
+
+```{r}
+ggplot(adult) + aes(x=as.numeric(age), group=income, fill=income) + 
+  geom_histogram(binwidth=1, color='black')
+```
+
+```{r}
+table(adult$workclass)
+```
+
+```{r}
+table(adult$race)
+```
+
+```{r}
+table(adult$education)
+```
+
+
+```{r}
+adult %>% filter(adult$marital.status=='Separated') %>% count()
+```
+
+```{r}
+adult %>% filter(adult$marital.status=='Widowed') %>% count()
+```
+
+```{r}
+adult %>% count(race, education)
+```
+
+```{r}
+adult %>% filter(capital.gain!=0) %>% count()
+```
+
+
+```{r}
+adult %>% filter(race=='White'& age < 21)
+```
+
+```{r}
+adult%>% count(occupation) %>% arrange(desc(n))
+```
+
+
+
+```{r}
+adult%>% count(race,income)
+```
+
+```{r}
+adult%>%count(race, education)
+```
+
+
+```{r}
+ggplot(adult,aes(race)) + geom_bar() +
+xlab("race") +
+ggtitle("Race vs. count")
+```
+
+```{r}
+adult %>% filter(age<21) %>% 
+ggplot(aes(race)) + geom_bar() +
+xlab("race") +
+ggtitle("race under the age")
+```
+
+```{r}
+adult %>% count(income)
+```
+
+```{r}
+adult %>% count(education, gender)
+```
+
+```{r}
+adult %>% count(race, income)
+```
+
+
+
+
+```{r}
+adult %>% count(race, education,income )
+```
+
+```{r}
+adult %>% filter(education=='HS-grad') %>% count()
+```
+
+```{r}
+adult %>% count(education)
+```
+
+
+
+```{r}
+ggplot(adult,aes(education)) + geom_bar() +
+xlab("Edu") +
+ggtitle("EDU vs. count")
+```
+```{r}
+adult %>% filter(income=='>50K') %>%
+ggplot(aes(education)) + geom_bar() +
+xlab("Edu") +
+ggtitle("EDU over 50K")
+```
+
+```{r}
+adult  %>% count(education,income) %>% arrange(desc(n))
+
+```
+
+```{r}
+adult %>% filter(race=='White') %>% count(education,income)
+
+```
+
+## race, gender ==> high income 
+```{r}
+adult %>% count(race, gender,income)  %>% arrange(desc(n)) 
+```
+
+```{r}
+adult %>% filter(race=="White") %>% count(gender, education)
+```
+
+
+
+```{r}
+table1 = adult %>% count(race,income)
+table1
+```
+
+## gender
+```{r}
+adult %>% count(gender, education)
+```
+
+```{r}
+unique(adult$education)
+```
+
+
+# 1. Race & Income
+```{r}
+adult %>% count(race, income)
+```
+
+
+# 2. education 
+```{r}
+ggplot(adult, aes(x = education)) + geom_bar(aes(fill = race))+
+ggtitle("Number of people based on education levels and race")
+```
+
+# 3. Gender & Income 
+```{r}
+ggplot(adult, aes(x = gender)) + geom_bar(aes(fill = income))+
+ggtitle("Number of people based on gender and income")
+```
+
+
+```{r}
+ggplot(adult, aes(x = gender)) + geom_bar(aes(fill = income))
+
+```
+
+
+# Do you know more white males able to make high income as their education levels are not high? 
+```{r}
+adult %>% filter(educational.num<14 & income ==">50K") %>%
+  ggplot(aes(x = race)) + geom_bar(aes(fill = gender))+
+  ggtitle("Number of people based on race and gender where income >50K and educational-num <14")
+```
+
+
+```{r}
+adult %>% count(education, educational.num)
+```
+
+```{r}
+adult2 <- adult
+table(adult2$occupation)
+```
+
+```{r}
+adult2$occupation <- gsub('Adm-clerical', 'White-Collar', adult2$occupation)
+adult2$occupation <- gsub('Craft-repair', 'Blue-Collar', adult2$occupation)
+adult2$occupation <- gsub('Exec-managerial', 'White-Collar', adult2$occupation)
+adult2$occupation <- gsub('Farming-fishing', 'Blue-Collar', adult2$occupation)
+adult2$occupation <- gsub('Handlers-cleaners', 'Blue-Collar', adult2$occupation)
+adult2$occupation <- gsub('Machine-op-inspct', 'Blue-Collar', adult2$occupation)
+adult2$occupation <- gsub('Other-service', 'Service', adult2$occupation)
+adult2$occupation <- gsub('Priv-house-serv', 'Service', adult2$occupation)
+adult2$occupation <- gsub('Prof-specialty', 'Professional', adult2$occupation)
+adult2$occupation <- gsub('Protective-serv', 'Service', adult2$occupation)
+adult2$occupation <- gsub('Tech-support', 'Service', adult2$occupation)
+adult2$occupation <- gsub('Transport-moving', 'Blue-Collar', adult2$occupation)
+adult2$occupation <- gsub('%?%', 'Other/Unknown', adult2$occupation)
+adult2$occupation <- gsub('Armed-Forces', 'Other/Unknown', adult2$occupation)
+adult2$occupation <- as.factor(adult2$occupation)
+summary(adult2$occupation)
+```
+
+```{r}
+df2 <- data.frame(table(adult2$income, adult2$occupation))
+names(df2) <- c('income', 'occupation', 'count')
+df2
+```
+
+```{r}
+df2 %>% filter(occupation!="?") %>%
+  ggplot(aes(x = occupation, y = count, fill = income)) +
+  geom_bar(stat = "identity") + 
+  ggtitle('Income Level with Different Occupations')
+```
+```{r}
+ggplot(adult) + aes(x=as.numeric(age), group=income, fill=income) + 
+  geom_histogram(binwidth=1, color='black') +
+  ggtitle('Income earned group by different age') +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+```{r}
+ggplot(adult) + aes(x=as.numeric(age), group=gender, fill=gender) + 
+  geom_histogram(binwidth=1, color='black') +
+  ggtitle('Income earned group by gender') +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+ggplot(adult, aes(x = hours.per.week)) +
+  geom_boxplot(fill = 'cyan3') +
+  ggtitle("Distribution of adults by hours per week") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+ggplot(adult, aes(x = age)) +
+  geom_histogram(aes(fill = relationship), colour = "black", bins = 30) +
+  ggtitle("Histogram of age vs number of employer categorized by relationship") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+ggplot(adult) + aes(x=as.numeric(capital.gain), group=income, fill=income) + 
+  geom_histogram(bins=10, color='black') + ggtitle('Histogram of Capital Gain') +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+```{r}
+ggplot(adult) + aes(x=as.numeric(capital.loss), group=income, fill=income) + 
+  geom_histogram(bins=10, color='black') + ggtitle('Histogram of Capital Loss') +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+ggplot(adult) + aes(x=as.numeric(capital.gain), group=income, fill=income) + 
+  geom_histogram(bins=10, color='black') + ggtitle('Histogram of Capital Loss') +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
